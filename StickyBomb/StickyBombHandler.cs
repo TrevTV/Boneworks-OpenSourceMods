@@ -13,13 +13,13 @@ namespace StickyBomb
 
         public FixedJoint connector;
 
-        public void Start()
+        private void Start()
         {
             rb = GetComponent<Rigidbody>();
             grip = GetComponentInChildren<Grip>();
         }
 
-        public void OnCollisionStay(Collision col)
+        private void OnCollisionStay(Collision col)
         {
             // Check if the object is attached to the player
             if (col.gameObject.GetComponentInParent<RigManager>()) return;
@@ -28,6 +28,8 @@ namespace StickyBomb
             if (grip.attachedHands.Count == 0)
                 Connect(colRb);
         }
+
+        private void OnEnable() => Disconnect();
 
         public void Connect(Rigidbody connectRb = null)
         {

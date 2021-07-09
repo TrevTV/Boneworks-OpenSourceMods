@@ -30,10 +30,8 @@ namespace StickyBomb
 
             Hooking.OnGrabObject += OnPlayerGrabObject;
 
-            // todo: the harmony patches here dont work due to il2cpp mono weirdness
             LoadAssets();
-            HarmonyInstance.Patch(AccessTools.Method(typeof(Grenade), "Start"), null, new HarmonyMethod(typeof(StickyBomb).GetMethod("GrenadeStart")));
-            HarmonyInstance.Patch(AccessTools.Method(typeof(Grenade), "Reset"), null, new HarmonyMethod(typeof(StickyBomb).GetMethod("GrenadeReset")));
+            HarmonyInstance.Patch(typeof(Poolee).GetMethod("Awake", AccessTools.all), null, new HarmonyMethod(typeof(StickyBomb).GetMethod("PooleeAwake")));
         }
 
         public void LoadAssets()
@@ -53,18 +51,11 @@ namespace StickyBomb
             SpawnMenu.AddItem(CustomItems.CreateSpawnableObject(detonator, "Detonator", StressLevelZero.Data.CategoryFilters.GADGETS, PoolMode.REUSEOLDEST, 2));
         }
 
-        public static void GrenadeStart(Grenade __instance)
+        public static void PooleeAwake(Poolee __instance)
         {
             StickyBombHandler handler = __instance.GetComponent<StickyBombHandler>();
-            if (__instance.GetComponent<Poolee>().pool.name == "pool - Pipe Bomb" && !handler)
+            if (__instance.pool.name == "pool - Pipe Bomb" && !handler)
                 __instance.gameObject.AddComponent<StickyBombHandler>();
-        }
-
-        public static void GrenadeReset(Grenade __instance)
-        {
-            StickyBombHandler handler = __instance.GetComponent<StickyBombHandler>();
-            if (handler)
-                handler.Disconnect();
         }
 
         private void OnPlayerGrabObject(GameObject obj, Hand hand)
