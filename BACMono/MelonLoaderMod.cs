@@ -2,6 +2,8 @@
 using MelonLoader;
 using UnityEngine;
 using ModThatIsNotMod;
+using System.Reflection;
+using System;
 
 namespace BACMono
 {
@@ -14,6 +16,8 @@ namespace BACMono
         public const string DownloadLink = null;
     }
 
+    public delegate void CMHandler(string mapName);
+
     public class BACMono : MelonMod
     {
         private GameObject setupBac;
@@ -24,6 +28,26 @@ namespace BACMono
             UnhollowerRuntimeLib.ClassInjector.RegisterTypeInIl2Cpp<TriggerCheck>();
 
             SetupAssets();
+            EnableCustomMapsSupport();
+        }
+
+        private void EnableCustomMapsSupport()
+        {
+            /*try
+            {
+                CMHandler handler = CMSpawn;
+                Assembly a = Assembly.LoadFrom(Path.Combine(Directory.GetCurrentDirectory(), "Mods", "CustomMaps.dll"));
+                Type t = a.GetType("CustomMaps.CustomMaps");
+                t.GetEvent("OnCustomMapLoad").AddEventHandler(null, handler);
+            }
+            catch { }*/
+            CustomMaps.CustomMaps.OnCustomMapLoad += CMSpawn;
+        }
+
+        private void CMSpawn(string mapName)
+        {
+            MelonLogger.Msg("[BAC_DEBUG] MAP LOADED: " + mapName);
+            GameObject.Find("CUSTOM_MAP_ROOT").transform.Find("BACMono").gameObject.AddComponent<BACController>();
         }
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
