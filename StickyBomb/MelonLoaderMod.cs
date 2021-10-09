@@ -2,11 +2,14 @@
 using StressLevelZero.Pool;
 using System;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
-using WNP78.Grenades;
 using HarmonyLib;
 using ModThatIsNotMod;
-using StressLevelZero.Interaction;
+using System.Xml.Linq;
+using WNP78.Grenades;
+using StressLevelZero.Data;
 
 namespace StickyBomb
 {
@@ -15,7 +18,7 @@ namespace StickyBomb
         public const string Name = "StickyBomb";
         public const string Author = "trev";
         public const string Company = null;
-        public const string Version = "1.0.0";
+        public const string Version = "1.0.1";
         public const string DownloadLink = null;
     }
 
@@ -28,14 +31,13 @@ namespace StickyBomb
             UnhollowerRuntimeLib.ClassInjector.RegisterTypeInIl2Cpp<Detonator>();
             UnhollowerRuntimeLib.ClassInjector.RegisterTypeInIl2Cpp<StickyBombHandler>();
 
-            Hooking.OnGrabObject += OnPlayerGrabObject;
-
             LoadAssets();
-            HarmonyInstance.Patch(typeof(Poolee).GetMethod("Awake", AccessTools.all), null, new HarmonyMethod(typeof(StickyBomb).GetMethod("PooleeAwake")));
         }
 
         public void LoadAssets()
         {
+            #region Detonator
+
             MemoryStream memoryStream;
             using (Stream stream = Assembly.GetManifestResourceStream("StickyBomb.det"))
             {
@@ -48,21 +50,47 @@ namespace StickyBomb
             CustomItems.FixObjectShaders(detonator);
 
             detonator.transform.Find("ScaleFix").Find("ButtonCollider").gameObject.AddComponent<Detonator>();
-            SpawnMenu.AddItem(CustomItems.CreateSpawnableObject(detonator, "Detonator", StressLevelZero.Data.CategoryFilters.GADGETS, PoolMode.REUSEOLDEST, 2));
-        }
+            SpawnMenu.AddItem(CustomItems.CreateSpawnableObject(detonator, "Detonator", CategoryFilters.GADGETS, PoolMode.REUSEOLDEST, 2));
 
-        public static void PooleeAwake(Poolee __instance)
-        {
-            StickyBombHandler handler = __instance.GetComponent<StickyBombHandler>();
-            if (__instance.pool.name == "pool - Pipe Bomb" && !handler)
-                __instance.gameObject.AddComponent<StickyBombHandler>();
-        }
+            #endregion
 
-        private void OnPlayerGrabObject(GameObject obj, Hand hand)
-        {
-            StickyBombHandler handler = obj.GetComponentInParent<StickyBombHandler>();
-            if (handler)
-                handler.Disconnect();
+            #region Bomb
+
+            MemoryStream bombStream;
+            using (Stream bombFileStream = Assembly.GetManifestResourceStream("StickyBomb.pipebomb"))
+            {
+                bombStream = new MemoryStream((int)bombFileStream.Length);
+                bombFileStream.CopyTo(bombStream);
+            }
+            AssetBundle grenade = AssetBundle.LoadFromMemory(bombStream.ToArray());
+            grenade.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            TextAsset text = grenade.LoadAsset<TextAsset>("Grenades.xml");
+            var xml = XDocument.Parse(text.text);
+
+            foreach (var grenadeXml in xml.Root.Elements("Grenade"))
+            {
+                var prefab = grenade.LoadAsset<GameObject>((string)grenadeXml.Attribute("prefab"));
+                prefab.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                CustomItems.FixObjectShaders(prefab);
+                var guid = Guid.NewGuid();
+                prefab.name = "GrenadeGuid_" + guid.ToString();
+                Dictionary<Guid, XElement> definitions =
+                    (Dictionary<Guid, XElement>)typeof(GrenadesMod)
+                    .GetField("definitions", AccessTools.all)
+                    .GetValue(MelonHandler.Mods.SingleOrDefault((m) => Path.GetFileNameWithoutExtension(m.Location).Contains("Grenades")));
+                definitions[guid] = grenadeXml;
+                var g = prefab.AddComponent<Grenade>();
+                prefab.AddComponent<StickyBombHandler>();
+                SpawnMenu.AddItem(CustomItems.CreateSpawnableObject(
+                    prefab,
+                    (string)grenadeXml.Attribute("name") ?? "[Grenade]",
+                    (CategoryFilters)Enum.Parse(typeof(CategoryFilters), (string)grenadeXml.Attribute("category") ?? "GADGETS", true),
+                    PoolMode.REUSEOLDEST,
+                    (int?)grenadeXml.Attribute("pool") ?? 4
+                ));
+            }
+
+            #endregion
         }
     }
 }

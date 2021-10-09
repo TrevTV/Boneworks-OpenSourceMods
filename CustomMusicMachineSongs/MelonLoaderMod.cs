@@ -6,6 +6,7 @@ using System.IO;
 using UnityEngine;
 using ModThatIsNotMod;
 using ModThatIsNotMod.BoneMenu;
+using System.Linq;
 
 namespace CustomMusicMachineSongs
 {
@@ -25,20 +26,24 @@ namespace CustomMusicMachineSongs
          * All I changed was to make it single threaded (BONEWORKS doesn't like multithreading)
          */
         public static Dictionary<string, AudioClip> audioClips = new Dictionary<string, AudioClip>();
-        static string pathToSongs = Directory.GetCurrentDirectory() + "\\UserData\\Music\\";
-        static GameObject monoDisk;
+        private static string pathToSongs = Path.Combine(MelonUtils.UserDataDirectory, "Music");
+        private static GameObject monoDisk;
+        public static MelonPreferences_Entry<bool> removeOriginalSongs;
+
+        private static string[] allowedExts = new string[] { ".wav", ".mp3" };
 
         public override void OnApplicationStart()
-        {
-            MelonPreferences.CreateCategory("CustomMonoDiskSongs");
-            MelonPreferences.CreateEntry("CustomMonoDiskSongs", "RemoveOriginalSongs", false);
-
+        {        
             if (!Directory.Exists(pathToSongs))
                 Directory.CreateDirectory(pathToSongs);
 
-            MenuCategory ui = MenuManager.CreateCategory("MonoDisk", Color.white);
-            
-            ui.CreateFunctionElement("Spawn MonoDisk", Color.white, SpawnMonoDisk);
+            /*MenuCategory ui = MenuManager.CreateCategory("MonoDisk", Color.white);
+            ui.CreateFunctionElement("Spawn MonoDisk", Color.white, SpawnMonoDisk);*/
+
+            MelonPreferences_Category category = MelonPreferences.CreateCategory("CustomMonoDiskSongs");
+            removeOriginalSongs = category.CreateEntry("RemoveOriginalSongs", false);
+
+            MelonPreferences.Save();
 
             LoadSongs();
         }
@@ -56,8 +61,8 @@ namespace CustomMusicMachineSongs
                     monoDisk = _monoDisk;
                     Object.DontDestroyOnLoad(monoDisk);
 
-                    SpawnMenu.AddItem(CustomItems.CreateSpawnableObject(monoDisk, "MonoDisk", StressLevelZero.Data.CategoryFilters.GADGETS, StressLevelZero.Pool.PoolMode.REUSEOLDEST, 2));
-                    MelonLogger.Msg("Found MonoDisk and added to spawngun");
+                    /*SpawnMenu.AddItem(CustomItems.CreateSpawnableObject(monoDisk, "MonoDisk", StressLevelZero.Data.CategoryFilters.GADGETS, StressLevelZero.Pool.PoolMode.REUSEOLDEST, 2));
+                    MelonLogger.Msg("Found MonoDisk and added to spawngun");*/
                 }
             }
         }
@@ -66,9 +71,11 @@ namespace CustomMusicMachineSongs
         {
             BassImporter bassImporter = new BassImporter();
 
-            string[] wavs = Directory.GetFiles(pathToSongs, "*.wav *.mp3");
+            string[] wavs = Directory.GetFiles(pathToSongs);
             for (int i = 0; i < wavs.Length; i++)
             {
+                if (!allowedExts.Contains(Path.GetExtension(wavs[i]))) continue;
+
                 bassImporter.Import(wavs[i]);
                 AudioClip clip = bassImporter.audioClip;
                 if (clip == null)
@@ -97,9 +104,9 @@ namespace CustomMusicMachineSongs
     [HarmonyPatch(typeof(JukeBoxMachine), "Start")]
     public static class JukePatch
     {
-        public static void Postfix(JukeBoxMachine __instance)
+        public static void Prefix(JukeBoxMachine __instance)
         {
-            if (MelonPreferences.GetEntryValue<bool>("CustomMonoDiskSongs", "RemoveOriginalSongs"))
+            if (Main.removeOriginalSongs.Value)
             {
                 __instance.clip_track = new AudioClip[0];
                 __instance.name_track = new string[0];

@@ -3,6 +3,7 @@ using UnityEngine;
 using StressLevelZero.Pool;
 using WNP78.Grenades;
 using StressLevelZero.Interaction;
+using System.Collections.Generic;
 
 namespace StickyBomb
 {
@@ -17,9 +18,11 @@ namespace StickyBomb
         private int clicked = 0;
         private float clicktime = 0;
         private const float clickdelay = 0.5f;
+        private List<Poolee> knownGrenades;
 
         public void Start()
         {
+            knownGrenades = new List<Poolee>();
             grip = transform.parent.Find("Colliders").Find("gripPoint").GetComponent<Grip>();
         }
 
@@ -61,8 +64,9 @@ namespace StickyBomb
         private IEnumerator CoExplodeAll()
         {
             isDetonating = true;
-            var poolees = PoolManager.GetPool("Pipe Bomb")._spawnedObjects;
-            foreach (Poolee poolee in poolees)
+            knownGrenades.Clear();
+            knownGrenades.AddRange(PoolManager.GetPool("Pipe Bomb")._spawnedObjects.ToArray());
+            foreach (Poolee poolee in knownGrenades)
             {
                 try
                 {

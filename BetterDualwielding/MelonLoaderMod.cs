@@ -9,10 +9,10 @@ namespace BetterDualwielding
 {
     public static class BuildInfo
     {
-        public const string Name = "Better Dualwielding";
+        public const string Name = "BetterDualwielding";
         public const string Author = "trevtv";
         public const string Company = null;
-        public const string Version = "1.1.0";
+        public const string Version = "1.1.1";
         public const string DownloadLink = null;
     }
 

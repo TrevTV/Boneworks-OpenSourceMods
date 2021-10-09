@@ -89,5 +89,11 @@
   <ItemGroup>
     <EmbeddedResource Include="det" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="pipebomb" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>COPY "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\BONEWORKS\BONEWORKS\Mods"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

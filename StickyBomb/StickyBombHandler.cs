@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using StressLevelZero.Rig;
 using StressLevelZero.Interaction;
+using System.Collections;
 
 namespace StickyBomb
 {
@@ -17,6 +18,9 @@ namespace StickyBomb
         {
             rb = GetComponent<Rigidbody>();
             grip = GetComponentInChildren<Grip>();
+            GripEvents gripEvents = grip.gameObject.AddComponent<GripEvents>();
+            gripEvents.AttachedEvent = new UnityEngine.Events.UnityEvent();
+            gripEvents.AttachedEvent.AddListener(new System.Action(Disconnect));
         }
 
         private void OnCollisionStay(Collision col)

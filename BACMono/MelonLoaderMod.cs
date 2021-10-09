@@ -12,7 +12,7 @@ namespace BACMono
         public const string Name = "BACMono";
         public const string Author = "trev";
         public const string Company = null;
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
         public const string DownloadLink = null;
     }
 
@@ -46,7 +46,7 @@ namespace BACMono
 
         private void CMSpawn(string mapName)
         {
-            MelonLogger.Msg("[BAC_DEBUG] MAP LOADED: " + mapName);
+            //MelonLogger.Msg("[BAC_DEBUG] MAP LOADED: " + mapName);
             GameObject.Find("CUSTOM_MAP_ROOT").transform.Find("BACMono").gameObject.AddComponent<BACController>();
         }
 

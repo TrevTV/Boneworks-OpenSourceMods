@@ -10,9 +10,9 @@ namespace Cinema
     public static class BuildInfo
     {
         public const string Name = "Cinema";
-        public const string Author = "trevtv";
+        public const string Author = "trev";
         public const string Company = null;
-        public const string Version = "1.0.0";
+        public const string Version = "1.0.1";
         public const string DownloadLink = null;
     }
 
@@ -100,7 +100,7 @@ namespace Cinema
             // knah and Slaynash assisted me with some of this
             var youtube = new YoutubeClient();
             var streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
-            var streamInfo = streamManifest.GetMuxed().WithHighestVideoQuality();
+            var streamInfo = streamManifest.GetMuxedStreams().GetWithHighestVideoQuality();
 
             return streamInfo.Url;
         }
