@@ -1,9 +1,9 @@
 ﻿using MelonLoader;
-using System.Threading.Tasks;
+using System.IO;
 using UnityEngine;
-using UnityEngine.Video;
+using UnityEngine.UI;
 using YoutubeExplode;
-using YoutubeExplode.Videos.Streams;
+using ModThatIsNotMod.BoneMenu;
 
 namespace Cinema
 {
@@ -12,97 +12,107 @@ namespace Cinema
         public const string Name = "Cinema";
         public const string Author = "trev";
         public const string Company = null;
-        public const string Version = "1.0.1";
+        public const string Version = "1.1.0";
         public const string DownloadLink = null;
     }
 
     public class Cinema : MelonMod
     {
-        private VideoPlayer currentPlayer;
-        private bool uiOpen;
-        private string url;
+        public static string DataDirectory;
+        public static string YTDLPPath;
+        public static YoutubeClient YouTubeClient;
+
+        public static MelonPreferences_Entry<bool> UseRealtimeGIDefault;
 
         public override void OnApplicationStart()
         {
+            UnhollowerRuntimeLib.ClassInjector.RegisterTypeInIl2Cpp<YouTubeMain>();
+            UnhollowerRuntimeLib.ClassInjector.RegisterTypeInIl2Cpp<YouTubeVideoPlayer>();
+
+            SetupDirectories();
+            SetupModPrefs();
+
             CustomMaps.CustomMaps.OnCustomMapLoad += CustomMaps_OnCustomMapLoad;
-            MelonLogger.Msg("Loaded Cinema");
+            Entanglement.SyncModuleSetup.Init();
         }
 
-        public override void OnUpdate()
+        private void SetupDirectories()
         {
-            if (currentPlayer != null && Input.GetKeyDown(KeyCode.C))
-            {
-                url = "";
-                uiOpen = !uiOpen;
-            }
-            if (currentPlayer == null && uiOpen)
-            {
-                url = "";
-                uiOpen = false;
-            }
-        }
+            DataDirectory = Path.Combine(MelonUtils.UserDataDirectory, "Cinema");
+            YTDLPPath = Path.Combine(DataDirectory, "yt-dlp.exe");
+            if (!Directory.Exists(DataDirectory))
+                Directory.CreateDirectory(DataDirectory);
+            YouTubeClient = new YoutubeClient();
 
-        public override void OnGUI()
-        {
-            if (uiOpen)
+            if (!File.Exists(YTDLPPath))
             {
-                GUILayoutOption[] option = null;
-                GUILayout.BeginArea(new Rect(Screen.width / 2 - 250, Screen.height / 2 - 400, 500f, 800f));
-                GUILayout.Box("Cinema Display", option);
-
-                GUILayout.Label("URL", option);
-                url = GUILayout.TextField(url, 999, option);
-
-                if (GUILayout.Button("Play", option))
+                byte[] rawDlp;
+                using (Stream str = Assembly.GetManifestResourceStream("Cinema.yt-dlp.exe"))
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    if (!string.IsNullOrWhiteSpace(url))
-                    {
-                        PlayVideo(url);
-                    }
+                    str.CopyTo(memoryStream);
+                    rawDlp = memoryStream.ToArray();
                 }
-
-                GUILayout.EndArea();
+                File.WriteAllBytes(YTDLPPath, rawDlp);
             }
+        }
+
+        private void SetupModPrefs()
+        {
+            var category = MelonPreferences.CreateCategory("Cinema");
+            UseRealtimeGIDefault = category.CreateEntry(nameof(UseRealtimeGIDefault), false);
+
+            YouTubeVideoPlayer.UseRealtimeGI = UseRealtimeGIDefault.Value;
+            MenuCategory boneCategory = MenuManager.CreateCategory("Cinema", Color.white);
+            boneCategory.CreateBoolElement("Realtime Emission", Color.white, UseRealtimeGIDefault.Value, (b) =>
+            {
+                YouTubeVideoPlayer.UseRealtimeGI = b;
+                YouTubeMain.Instance?.YTDisplay?.UpdateEmissionStatus();
+            });
         }
 
         private void CustomMaps_OnCustomMapLoad(string obj)
         {
-            if (obj.Contains("cinema"))
+            GameObject display = GameObject.Find("!Display");
+            if (display)
             {
                 MelonLogger.Msg("Setting up cinema display...");
-                GameObject screen = GameObject.Find("HDScreen");
+                YouTubeVideoPlayer vp = display.AddComponent<YouTubeVideoPlayer>();
+                display.GetComponent<AudioSource>().outputAudioMixerGroup = ModThatIsNotMod.Audio.musicMixer;
 
-                currentPlayer = screen.GetComponent<VideoPlayer>();
-                var audioSource = screen.GetComponent<AudioSource>();
+                Transform root = display.transform.parent;
+                Transform youtubeStuff = root.transform.Find("YouTubeStuff");
+                YouTubeMain ytMain = youtubeStuff.transform.Find("YouTubeMain").gameObject.AddComponent<YouTubeMain>();
 
-                currentPlayer.SetTargetAudioSource(0, audioSource);
+                ytMain.ContentTransform = youtubeStuff.Find("YouTubeSearch/group_popUp/panel_global/Scroll View/Viewport/Content").GetComponent<RectTransform>();
+                ytMain.ButtonPrefab = youtubeStuff.Find("YouTubeSearch/group_popUp/panel_global/Scroll View/Viewport/Content/Button").gameObject;
+                ytMain.SearchButton = youtubeStuff.Find("YouTubeSearch/group_popUp/panel_global/Button").GetComponent<Button>();
+                ytMain.Search = youtubeStuff.Find("YouTubeSearch/group_popUp/panel_global/InputField").GetComponent<InputField>();
+                ytMain.YTDisplay = vp;
+
+                ytMain.QueueInfo.ContentTransform = youtubeStuff.Find("VideoQueue/group_popUp/panel_global/Scroll View/Viewport/Content").GetComponent<RectTransform>();
+                ytMain.QueueInfo.ItemPrefab = youtubeStuff.Find("VideoQueue/group_popUp/panel_global/Scroll View/Viewport/Content/Item").gameObject;
+
+                foreach (Button key in root.Find("YouTubeStuff/YouTubeSearch/group_popUp/panel_global/Keys").GetComponentsInChildren<Button>())
+                {
+                    key.onClick.AddListener(new System.Action(() =>
+                    {
+                        if (key.name == "Backspace")
+                        {
+                            if (ytMain.Search.text.Length != 0)
+                                ytMain.Search.text = ytMain.Search.text.Remove(ytMain.Search.text.Length - 1);
+                            return;
+                        }
+                        else if (key.name == "Space")
+                        {
+                            ytMain.Search.text += " ";
+                            return;
+                        }
+
+                        ytMain.Search.text += key.name.ToLower();
+                    }));
+                }
             }
-        }
-
-        private void PlayVideo(string path)
-        {
-            if (currentPlayer == null)
-                return;
-
-            uiOpen = false;
-
-            if (path.Contains("youtube.com") || path.Contains("youtu.be"))
-            {
-                //currentPlayer.Stop();
-                string finalPath = Task.Run(() => GetStreamURL(path)).Result;
-                currentPlayer.url = finalPath;
-                currentPlayer.Play();
-            }
-        }
-
-        async public Task<string> GetStreamURL(string url)
-        {
-            // knah and Slaynash assisted me with some of this
-            var youtube = new YoutubeClient();
-            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
-            var streamInfo = streamManifest.GetMuxedStreams().GetWithHighestVideoQuality();
-
-            return streamInfo.Url;
         }
     }
 }

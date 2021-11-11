@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StickyBomb", "StickyBomb\St
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CinemaEntanglement", "CinemaEntanglement\CinemaEntanglement.csproj", "{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoltUnlocker", "BoltUnlocker\BoltUnlocker.csproj", "{45C7CDEA-00E2-4808-9268-AF2B8A728D79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45C7CDEA-00E2-4808-9268-AF2B8A728D79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45C7CDEA-00E2-4808-9268-AF2B8A728D79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45C7CDEA-00E2-4808-9268-AF2B8A728D79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45C7CDEA-00E2-4808-9268-AF2B8A728D79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
