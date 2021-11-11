@@ -48,19 +48,6 @@ namespace BoltUnlocker
             }
         }
 
-        public static void AfterGunStart(Gun __instance)
-        {
-            Poolee poolee = __instance.GetComponent<Poolee>();
-            if (poolee == null) MelonLogger.Msg(__instance.name + " has no Poolee");
-
-            if (poolee != null && !poolsToDoShitTo.Contains(poolee.pool.Prefab.name))
-            {
-                MelonLogger.Msg("checking pool of prefab: " + poolee.pool.Prefab.name);
-                if (doShitTo.Value.Contains(poolee.pool.Prefab.name))
-                    poolsToDoShitTo.Add(poolee.pool.Prefab.name);
-            }
-        }
-
         public static void OnCompleteSlidePull(Gun __instance)
         {
             //MelonLogger.Msg("hi this fucker just did a thing: " + __instance.name);
