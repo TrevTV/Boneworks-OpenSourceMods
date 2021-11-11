@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rewind", "Rewind\Rewind.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StickyBomb", "StickyBomb\StickyBomb.csproj", "{E69F6C12-AD24-43FF-8A14-49F6696FB83A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CinemaEntanglement", "CinemaEntanglement\CinemaEntanglement.csproj", "{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{E69F6C12-AD24-43FF-8A14-49F6696FB83A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E69F6C12-AD24-43FF-8A14-49F6696FB83A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E69F6C12-AD24-43FF-8A14-49F6696FB83A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53BAB572-C0A6-4B2F-BCCA-E1B9139A819A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
