@@ -16,5 +16,5 @@ using MelonLoader;
 [assembly: AssemblyVersion(AudioReplacer.BuildInfo.Version)]
 [assembly: AssemblyFileVersion(AudioReplacer.BuildInfo.Version)]
 [assembly: NeutralResourcesLanguage("en")]
-[assembly: MelonInfo(typeof(AudioReplacer.AudioReplacer), AudioReplacer.BuildInfo.Name, AudioReplacer.BuildInfo.Version, AudioReplacer.BuildInfo.Author, AudioReplacer.BuildInfo.DownloadLink)]
+[assembly: MelonInfo(typeof(AudioReplacer.Core), AudioReplacer.BuildInfo.Name, AudioReplacer.BuildInfo.Version, AudioReplacer.BuildInfo.Author, AudioReplacer.BuildInfo.DownloadLink)]
 [assembly: MelonGame("Stress Level Zero", "BONEWORKS")]

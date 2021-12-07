@@ -27,6 +27,7 @@ namespace AmmoHUDToggler
 
         public override void OnSceneWasInitialized(int buildIndex, string levelName)
         {
+            if (ModThatIsNotMod.Player.GetRigManager() != null)
             ModThatIsNotMod.Player.GetRigManager().transform.Find("[UIRig]").Find("PLAYERUI").Find("Hud").gameObject.SetActive(false);
         }
     }

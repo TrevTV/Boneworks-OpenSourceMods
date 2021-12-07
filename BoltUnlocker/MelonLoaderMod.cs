@@ -12,7 +12,7 @@ namespace BoltUnlocker
         public const string Name = "BoltUnlocker";
         public const string Author = "trev";
         public const string Company = null;
-        public const string Version = "1.0.0";
+        public const string Version = "1.0.1";
         public const string DownloadLink = null;
     }
 
@@ -29,18 +29,19 @@ namespace BoltUnlocker
             poolsToDoShitTo = new List<string>();
             HarmonyInstance.Patch(typeof(Gun).GetMethod("CompleteSlidePull"), null, typeof(Core).GetMethod(nameof(OnCompleteSlidePull)).ToNewHarmonyMethod());
             Hooking.OnGrabObject += Hooking_OnGrabObject;
+            MelonPreferences.Save();
         }
 
         private void Hooking_OnGrabObject(UnityEngine.GameObject obj, StressLevelZero.Interaction.Hand hand)
         {
+            // i love modding :thumbsup:
+            if (obj == null) return;
             Poolee poolee = obj.GetComponentInParent<Poolee>();
-            if (poolee == null)
-            {
-                //MelonLogger.Msg(obj.name + " has no Poolee");
-                return;
-            }
+            if (poolee == null) return;
+            if (poolee.pool == null) return;
+            if (poolee.pool.Prefab == null) return;
 
-            if (poolee != null && !poolsToDoShitTo.Contains(poolee.pool.Prefab.name))
+            if (!poolsToDoShitTo.Contains(poolee.pool.Prefab.name))
             {
                 MelonLogger.Msg("checking pool of prefab: " + poolee.pool.Prefab.name);
                 if (doShitTo.Value.Contains(poolee.pool.Prefab.name))
